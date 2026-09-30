@@ -64,18 +64,29 @@ dont include anything other than the items listed in the meal`;
                 console.log(`   📝 Prompt ready.`);
 
                 // STEP B: Generate Image (HuggingFace Inference API / FLUX)
-                const imageResponse = await fetch("https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell", {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${process.env.HF_API_KEY}`,
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ inputs: imagePrompt }),
-                });
+                let imageResponse;
+                let retries = 3;
+                while (retries > 0) {
+                    try {
+                        imageResponse = await fetch("https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell", {
+                            method: "POST",
+                            headers: {
+                                "Authorization": `Bearer ${process.env.HF_API_KEY}`,
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({ inputs: imagePrompt }),
+                        });
+                        if (imageResponse.ok) break; // Success!
+                    } catch (e) {
+                        console.log(`   ⚠️ Network drop (fetch failed), retrying... (${retries - 1} attempts left)`);
+                    }
+                    retries--;
+                    if (retries > 0) await sleep(10000); // Wait 10s for the server to recover
+                }
                 
-                if (!imageResponse.ok) {
-                    const errText = await imageResponse.text();
-                    throw new Error(`Image generation failed: ${imageResponse.status} ${imageResponse.statusText} - ${errText}`);
+                if (!imageResponse || !imageResponse.ok) {
+                    const errText = imageResponse ? await imageResponse.text() : "Network completely dropped";
+                    throw new Error(`Image generation failed: ${imageResponse?.status} - ${errText}`);
                 }
                 
                 // HuggingFace returns the raw image bytes directly
