@@ -1,0 +1,13 @@
+{
+  "name": "autonomous-image-pipeline",
+  "version": "1.0.0",
+  "description": "AI Image Generation and Auditing Pipeline",
+  "main": "pipeline.js",
+  "type": "module",
+  "dependencies": {
+    "@google/genai": "^0.1.2",
+    "google-auth-library": "^9.14.2",
+    "google-spreadsheet": "^4.1.4",
+    "googleapis": "^144.0.0"
+  }
+}
