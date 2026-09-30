@@ -73,7 +73,10 @@ dont include anything other than the items listed in the meal`;
                     })
                 });
                 
-                if (!imageResponse.ok) throw new Error("Image generation failed. Rate limit or unavailable.");
+                if (!imageResponse.ok) {
+                    const errData = await imageResponse.text();
+                    throw new Error(`Image generation failed: ${imageResponse.status} ${imageResponse.statusText} - ${errData}`);
+                }
                 
                 const imageData = await imageResponse.json();
                 const base64Image = imageData.predictions[0].bytesBase64Encoded;
