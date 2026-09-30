@@ -63,15 +63,22 @@ dont include anything other than the items listed in the meal`;
 
                 console.log(`   📝 Prompt ready.`);
 
-                // STEP B: Generate Image (Pollinations.ai / FLUX)
-                const encodedPrompt = encodeURIComponent(imagePrompt);
-                const imageResponse = await fetch(`https://image.pollinations.ai/prompt/${encodedPrompt}?width=1920&height=1080&nologo=true&model=flux`);
+                // STEP B: Generate Image (HuggingFace Inference API / FLUX)
+                const imageResponse = await fetch("https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${process.env.HF_API_KEY}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ inputs: imagePrompt }),
+                });
                 
                 if (!imageResponse.ok) {
-                    throw new Error(`Image generation failed: ${imageResponse.status} ${imageResponse.statusText}`);
+                    const errText = await imageResponse.text();
+                    throw new Error(`Image generation failed: ${imageResponse.status} ${imageResponse.statusText} - ${errText}`);
                 }
                 
-                // Pollinations returns the raw image bytes directly
+                // HuggingFace returns the raw image bytes directly
                 const arrayBuffer = await imageResponse.arrayBuffer();
                 const base64Image = Buffer.from(arrayBuffer).toString('base64');
                 console.log(`   🎨 Image generated successfully.`);
