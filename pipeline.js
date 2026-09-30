@@ -63,23 +63,17 @@ dont include anything other than the items listed in the meal`;
 
                 console.log(`   📝 Prompt ready.`);
 
-                // STEP B: Generate Image (Imagen 3 REST API)
-                const imageResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${process.env.GEMINI_API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        instances: [{ prompt: imagePrompt }],
-                        parameters: { sampleCount: 1 }
-                    })
-                });
+                // STEP B: Generate Image (Pollinations.ai / FLUX)
+                const encodedPrompt = encodeURIComponent(imagePrompt);
+                const imageResponse = await fetch(`https://image.pollinations.ai/prompt/${encodedPrompt}?width=1920&height=1080&nologo=true&model=flux`);
                 
                 if (!imageResponse.ok) {
-                    const errData = await imageResponse.text();
-                    throw new Error(`Image generation failed: ${imageResponse.status} ${imageResponse.statusText} - ${errData}`);
+                    throw new Error(`Image generation failed: ${imageResponse.status} ${imageResponse.statusText}`);
                 }
                 
-                const imageData = await imageResponse.json();
-                const base64Image = imageData.predictions[0].bytesBase64Encoded;
+                // Pollinations returns the raw image bytes directly
+                const arrayBuffer = await imageResponse.arrayBuffer();
+                const base64Image = Buffer.from(arrayBuffer).toString('base64');
                 console.log(`   🎨 Image generated successfully.`);
 
                 // STEP C: Audit Image (Gemini Vision)
