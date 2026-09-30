@@ -48,17 +48,20 @@ async function runPipeline() {
             console.log(`\n👨‍🍳 Processing: ${mealName}`);
             
             try {
-                // STEP A: Generate Prompt (Gemini Text)
-                const promptResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Write a short, highly detailed photorealistic image generation prompt for a top-down view of an Indian meal containing: ${mealName}. Specify good lighting, modern plates, and high culinary quality. ONLY return the prompt text.` }] }]
-                    })
-                });
-                const promptData = await promptResponse.json();
-                const imagePrompt = promptData.candidates[0].content.parts[0].text;
-                console.log(`   📝 Prompt generated.`);
+                // STEP A: Prepare Prompt (Using your exact template!)
+                const imagePrompt = `A professional, high-angle food photograph of a traditional Indian thali meal, presented on a large, polished stainless steel round platter. 
+
+The meal consists of the following items: ${mealName}.
+
+Plating Instructions: 
+- Any liquid dishes, curries, dals, or salads from the list must be centered within individual, smaller matching metal katoris on the platter. 
+- Any breads, rotis, or chapatis from the list must NOT be in bowls; they must be positioned perfectly flat, unfolded, and directly in the foreground of the main platter. Do not add rice or other items not explicitly listed.
+
+Environment: Adjacent to the main platter on a clean, subtly textured light grey concrete surface, are standard side items including a ceramic water tumbler, a folded beige linen napkin, and a vintage silver spoon. The scene is illuminated by soft, diffused natural daylight, creating a clean, modern yet rustic aesthetic with appetizing textures and vibrant colors. Aspect Ratio: 16:9
+
+dont include anything other than the items listed in the meal`;
+
+                console.log(`   📝 Prompt ready.`);
 
                 // STEP B: Generate Image (Imagen 3 REST API)
                 const imageResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${process.env.GEMINI_API_KEY}`, {
